@@ -25,6 +25,7 @@ class SearchAPI(object):
         :param kwargs: The API search term[key] in the API call,
                         and position[value] in the read_file (tab separated columns)
                         example: (...name=3, kingdom=4) where the int is the position
+                        if there is one column only don't add any kwargs
         """
         line = self.file.readline()
         while line:
