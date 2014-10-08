@@ -60,7 +60,6 @@ class SearchAPI(object):
             response = request.urlopen(new_url)
             r = response.read()
             decoded_json = json.loads(r.decode('utf-8'))
-            #print('debug1')
             end_of_records = None
             try:
                 #Tests for the existence of the list results[]
@@ -78,7 +77,6 @@ class SearchAPI(object):
                 new_url = url+'&offset='+str(offset)+'&limit='+str(limit)
                 self.pagination(new_url, terms, keys, offset=offset)
             else:
-                #print('debug2')
                 try:
                     #Tests if results is a list
                     for j in results:
