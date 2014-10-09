@@ -63,7 +63,7 @@ class SearchAPI(object):
             decoded_json = json.loads(r.decode('utf-8'))
             end_of_records = None
             try:
-                #Tests for the existence of the list results[]
+                #See if the list results[] exists
                 results = decoded_json['results']
                 end_of_records = decoded_json['endOfRecords']
             except KeyError:
@@ -79,7 +79,7 @@ class SearchAPI(object):
                 self.pagination(new_url, terms, keys, offset=offset)
             else:
                 try:
-                    #Tests if results is a list
+                    #If results is not a list, go to exception
                     for j in results:
                         self.parse_json(j, keys, terms)
                 except:
