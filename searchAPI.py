@@ -17,7 +17,7 @@ class SearchAPI(object):
         self.write_file = open(write_path, mode='w', encoding='utf-8')
         self.url = url
         self.suffix = suffix
-        self.appended = ''
+        self.tick = False
 
     def take_parameters(self, *args, **kwargs):
         """
@@ -27,23 +27,24 @@ class SearchAPI(object):
                         example: (...name=3, kingdom=4) where the int is the position
                         if there is one column only don't add any kwargs
         """
+        self.next_url = ''
         line = self.file.readline()
         while line:
             new_url = self.url
             to_paging_params = []
             split_line = line.split('\t')
-
             if kwargs:
                 for k in kwargs:
-                        kw = split_line[kwargs[k]].strip()
-                        new_url += k+'='+parse.quote_plus(kw)+'&'
-                        to_paging_params.append(kw)
+                    kw = split_line[kwargs[k]].strip()
+                    new_url += k+'='+parse.quote_plus(kw)+'&'
+                    to_paging_params.append(kw)
+                self.next_url = new_url
             else:
                 val = split_line[0].strip()
-                new_url += val
-                self.appended = val
+                new_url += parse.quote_plus(val)
                 to_paging_params.append(val)
-            self.pagination(new_url.strip('&')+self.suffix, to_paging_params, args)
+                self.next_url = new_url.strip('&')+self.suffix
+            self.pagination(self.next_url, to_paging_params, args)
             line = self.file.readline()
 
     def pagination(self, url, terms, keys, offset=0):
@@ -53,12 +54,11 @@ class SearchAPI(object):
         :param keys: A list of JSON keys that you want the value for
         :param offset: Used to increment paging
         """
-        limit = 20
-        print(url)
-        new_url = url
+        limit = 100
 
+        print(url)
         try:
-            response = request.urlopen(new_url)
+            response = request.urlopen(url)
             r = response.read()
             decoded_json = json.loads(r.decode('utf-8'))
             end_of_records = None
@@ -72,12 +72,15 @@ class SearchAPI(object):
 
             if end_of_records is False:
                 print('False')
-                for j in results:
-                    self.parse_json(j, keys, terms)
-                offset += limit
-                new_url = url+'&offset='+str(offset)+'&limit='+str(limit)
+                if self.tick is True:
+                    for j in results:
+                        self.parse_json(j, keys, terms)
+                    offset += limit
+                new_url = self.next_url+'&offset='+str(offset)+'&limit='+str(limit)
+                self.tick = True
                 self.pagination(new_url, terms, keys, offset=offset)
             else:
+                self.tick = False
                 try:
                     #If results is not a list, go to exception
                     for j in results:
