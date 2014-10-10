@@ -10,3 +10,4 @@ Here is a usage example:
 >my_api = SearchAPI('http://api.gbif.org/v1/species/match?', 'D:/test/species_names.txt', 'D:/test/GBIF_names.txt')
 >my_api.take_parameters("usageKey", "scientificName", "canonicalName", "rank")
 
+See the exeSearch file for more examples.
