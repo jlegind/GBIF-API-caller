@@ -1,7 +1,7 @@
 GBIF_API_caller
 ===============
 
-This Python class can make API calls from a list of values and will parse the JSON response which is then outputted to a **flat text file** (tab separated).
+This Python class **SearchAPI** can make API calls from a list of values and will parse the JSON response which is then outputted to a **flat text file** (tab separated).
 It presupposes that the call is made to the GBIF Portal API http://www.gbif.org/developer/summary
 Only the Species API and the Occurrence API have been tested.
 
