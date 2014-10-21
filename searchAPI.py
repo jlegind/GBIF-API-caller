@@ -43,7 +43,7 @@ class SearchAPI(object):
                 val = split_line[0].strip()
                 new_url += parse.quote_plus(val)
                 to_paging_params.append(val)
-                self.next_url = new_url.strip('&')+self.suffix
+                self.next_url = new_url.strip('&')+self.suffix+'?'
             self.pagination(self.next_url, to_paging_params, args)
             line = self.file.readline()
 
