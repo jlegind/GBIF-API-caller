@@ -7,7 +7,7 @@ Only the Species API and the Occurrence API have been tested.
 
 Here is a usage example:
 
->my_api = SearchAPI('http://api.gbif.org/v1/species/match?name=', 'D:/test/species_names.txt', 'D:/test/GBIF_interpreted_names.txt')
+>my_api = SearchAPI('http://api.gbif.org/v1/species/match?name=', 'D:/test/species.txt', 'D:/test/GBIFinterpreted_names.txt')
 >my_api.take_parameters("usageKey", "scientificName", "canonicalName", "rank")
 
 The first argument is the search url, in this case it must contain everything except the variable that comes from text file in the second argument. The third argument is the output file.
