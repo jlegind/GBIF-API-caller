@@ -8,10 +8,10 @@ Only the Species API and the Occurrence API have been tested.
 Here is a usage example:
 
 >my_api = SearchAPI(
-'http://api.gbif.org/v1/species/match?name=', 
-'D:/test/species.txt', 
-'D:/test/GBIFinterpreted_names.txt'
-)
+>'http://api.gbif.org/v1/species/match?name=', 
+>'D:/test/species.txt', 
+>'D:/test/GBIFinterpreted_names.txt'
+>)
 
 >my_api.take_parameters("usageKey", "scientificName", "canonicalName", "rank")
 
