@@ -31,6 +31,6 @@ name=3, kingdom=4)
 # api = SearchAPI('http://api.gbif.org/v1/species/', 'G:/test/GISDnubtaxonomy_unique.txt',
 #                 'G:/test/vernacular_mk2.txt', suffix="/vernacularNames")
 # api.take_parameters('vernacularName', 'language', 'sourceTaxonKey', 'preferred')
-#
+
 # api = SearchAPI('http://api.gbif.org/v1/occurrence/download/dataset/', 'G:/test/downloads.txt', 'G:/test/download_stats.txt')
 # api.take_parameters('numberRecords', 'download')
