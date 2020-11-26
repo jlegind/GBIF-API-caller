@@ -1,8 +1,10 @@
 __author__ = 'jlegind'
 
 from urllib import parse, request
+import requests
 import json
 import collections
+import csv
 
 
 class SearchAPI(object):
@@ -14,7 +16,7 @@ class SearchAPI(object):
         :param suffix: If the url has a suffix like /verbatim after the params this can be tagged on
         """
         self.wp = write_path
-        self.file = open(read_path, mode='r', encoding='utf-8')
+        self.file = open(read_path, mode='r', encoding='utf-8-sig')
         self.write_file = open(write_path, mode='w', encoding='utf-8')
         self.url = url
         self.suffix = suffix
@@ -34,10 +36,13 @@ class SearchAPI(object):
             split_line = line.split(self.separator)
 
             if kwargs:
-                for k in kwargs:
-                        kw = split_line[kwargs[k]].strip()
-                        new_url += k+'='+parse.quote_plus(kw)+'&'
-                        to_paging_params.append(kw)
+                print(kwargs)
+                for k, v in kwargs.items():
+                    print('this is k in kwargs:', k)
+                    kw = split_line[kwargs[k]].strip()
+                    print('value ? ', v)
+                    new_url += k+'='+parse.quote_plus(kw)+'&'
+                    to_paging_params.append(kw)
             else:
                 vl = split_line[0].strip()
                 new_url += vl
@@ -46,6 +51,45 @@ class SearchAPI(object):
                 to_paging_params.append(vl)
             self.pagination(new_url.strip('&')+self.suffix, to_paging_params, args)
             line = self.file.readline()
+
+    def searching_gbif_api(self, url):
+        '''
+        Just get the GBIF api search result
+        '''
+        rson = requests.get(url)
+        rson = rson.json()
+        return rson
+
+    def filter_api_response(self, response, fields):
+        '''
+        response = json response from api
+        fields = A list of fields to parse for
+        '''
+        resp_dict = dict.fromkeys(fields)
+        for j in fields:
+            resp_dict[j] = response[j]
+
+        return resp_dict
+
+
+
+    def make_search_name(self, positions):
+        '''
+        assumes multiple columns and composes a name from these in order of positions
+        param: positions = a LIST of column positions in a csv/text file
+        '''
+        line = self.file.readline()
+        while line:
+            rowlist = line.split(self.separator)
+            # res = [name for name in rowlist]
+            name = [rowlist[e] for e in positions]
+            stripped_name = [j.rstrip() for j in name]
+            stripped_name = ' '.join(stripped_name)
+            print('stripped name: ', stripped_name)
+            line = self.file.readline()
+            search_url = self.url+stripped_name
+            yield search_url
+
 
     def pagination(self, url, terms, keys, offset=None, appended=''):
         """
@@ -142,18 +186,38 @@ def main():
     #                          "scientificName", "rank",
     #                        name=0)
 
-
-    # my_api = SearchAPI('http://api.gbif.org/v1/species/match?', 'G:/nub/toLookup.txt', 'G:/Custom exports/interpreted_names_oldNub.txt', separator=';')
+    my_api = SearchAPI('http://api.gbif.org/v1/species/match?kingdom=Animalia&name=', 'H:/into_api/atomized_fish_list.txt', 'H:/output_api/interpreted_names_fish.txt')
+    # #separator = tab
     # my_api.take_parameters("usageKey",
     #                          "scientificName", "kingdom", "phylum", "class", "order", "family", "genus", "rank", "status", "confidence",
-    #                        name=0)
+    #                        genus=0, name=1)
+    res = my_api.make_search_name([0,1,2])
+
+    with open('H:/output_api/interpreted_names_fish.txt', 'w+', newline='') as wfile:
+        field_list = ["usageKey", "acceptedUsageKey", "scientificName", "kingdom", "phylum", "class", "order", "family", "genus", "rank", "status", "confidence"]
+        writer = csv.DictWriter(wfile, fieldnames=field_list, delimiter='\t')
+        writer.writeheader()
+        for j in res:
+            print('name url == ', j)
+            try:
+                reply = my_api.searching_gbif_api(j)
+                res = my_api.filter_api_response(reply, field_list)
+                print('return dict === ', res)
+                writer.writerow(res)
+            except:
+                print('ERROR')
+        #
+        # my_api.pagination(j, ["usageKey",
+        #                       "scientificName", "kingdom", "phylum", "class", "order", "family", "genus", "rank", "status", "confidence"], )
+        # name_list.append(j)
+
 
     # my_api = SearchAPI('http://api.gbif.org/v1/dataset/', 'G:/Custom exports/dataset_list.csv', 'G:/Custom exports/lic_datasets.txt')
     # my_api.take_parameters("key", "title", "type")
     # my_api.take_parameters("key", "title", identifier=0)
 
-    my_api = SearchAPI('http://api.gbif.org/v1/occurrence/count?datasetKey=', 'G:/Deletion/deleted_datasets/datasetkeys.csv', 'G:/Custom exports/del_counts.txt')
-    my_api.take_parameters(None)
+    # my_api = SearchAPI('http://api.gbif.org/v1/occurrence/count?datasetKey=', 'G:/Deletion/deleted_datasets/datasetkeys.csv', 'G:/Custom exports/del_counts.txt')
+    # my_api.take_parameters(None)
     # UGLY HACK line 49 offset=None , must be 0
 
 if __name__ == '__main__':
