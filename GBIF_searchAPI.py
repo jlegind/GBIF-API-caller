@@ -38,7 +38,8 @@ class SearchAPI(object):
 
     def searching_gbif_api(self, url, offset=0):
         '''
-        Just get the GBIF api search result
+        Just get the GBIF api search result with paging if necessary. Modeled on the recursive extract_values function.
+        url: example ... http://api.gbif.org/v1/species/match?kingdom=Animalia&PLACEHOLDER FOR BINOMIAL OR TRINOMIAL
         '''
         res = []
         print('gained url = ',type(url), url)
@@ -59,8 +60,7 @@ class SearchAPI(object):
                 res.append(_result)
                 print('res now = ', _result)
             else:
-                offset = offset + 20
-                print('not end yet... ', len(_result), _result)
+                offset = offset + 200
                 res.append(_result)
                 paging(url, res, offset)
             return res
@@ -73,6 +73,7 @@ class SearchAPI(object):
         '''
         response = json response from api
         fields = A list of fields to parse for
+        Returns a dict to be made into a row. 1 dict == 1 row
         '''
         try:
             resp_dict = dict.fromkeys(fields)
@@ -80,21 +81,18 @@ class SearchAPI(object):
                 resp_dict[j] = response[j]
             return resp_dict
         except Exception as e:
+            #These names have no acceptedUsageKey because they are ACCEPTED names!
             print('errrror', e)
-        # else:
             copyfields = fields.copy()
-            print('fields scope: ', copyfields)
             copyfields.remove('acceptedUsageKey')
-            print('copy ', copyfields)
-            print('QQQ', response)
-            synonym_dict = dict.fromkeys(copyfields)
+            #removes the term 'acceptedUsageKey' from the dictionary
+            accepted_dict = dict.fromkeys(copyfields)
             print('after syndict')
-            print('syn dict -- ', synonym_dict)
+            print('syn dict -- ', accepted_dict)
             for item in copyfields:
-                synonym_dict[item] = response[item]
-                print(response[item])
-            print('accepted dict!!! ', synonym_dict)
-            return synonym_dict
+                accepted_dict[item] = response[item]
+
+            return accepted_dict
 
 
 myapi = SearchAPI('http://api.gbif.org/v1/species/match?kingdom=Animalia&name=', 'H:/into_api/atomized_fish_list.txt', 'H:/output_api/interpreted_names_fish.txt')
@@ -103,8 +101,6 @@ res = myapi.make_search_name([0,1,2])
 
 out_directory = 'H:/output_api/'
 read_file = 'H:/into_api/atomized_fish_list.txt' 'H:/output_api/interpreted_names_fish.txt'
-error_file = open(out_directory+'taxon_fail.csv', mode='w', encoding='utf-8', newline='')
-error_writer = csv.writer(error_file, delimiter='\t')
 
 with open('H:/output_api/interpreted_names_fish.txt', 'w+', newline='') as wfile:
     field_list = ["usageKey", "acceptedUsageKey", "scientificName", "kingdom", "phylum", "class", "order", "family",
@@ -113,20 +109,13 @@ with open('H:/output_api/interpreted_names_fish.txt', 'w+', newline='') as wfile
     writer.writeheader()
 
     for j in res:
-        print('name url == ', j, type(j))
         rsp = requests.get(j)
         rsp = rsp.json()
-        # print(rsp['usageKey'])
         reply = myapi.searching_gbif_api(j)
         try:
             res = myapi.filter_api_response(reply, field_list)
-            print('return dict === ', res)
             writer.writerow(res)
         except Exception as e:
             print('ERROR', e)
             print(res)
-            # message = 'The {} lookup failed. No match found in the GBIF taxon backbone.'.format(j)
-            print()
-            # error_writer.writerow({'error': message})
-            # continue
-            # break
+
