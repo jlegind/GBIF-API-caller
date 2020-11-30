@@ -102,7 +102,7 @@ res = myapi.make_search_name([0,1,2])
 out_directory = 'H:/output_api/'
 read_file = 'H:/into_api/atomized_fish_list.txt' 'H:/output_api/interpreted_names_fish.txt'
 
-with open('H:/output_api/interpreted_names_fish.txt', 'w+', newline='') as wfile:
+with open('H:/output_api/interpreted_names_fish.txt', 'w+', newline='', encoding='utf-8') as wfile:
     field_list = ["usageKey", "acceptedUsageKey", "scientificName", "kingdom", "phylum", "class", "order", "family",
                   "genus", "rank", "status", "confidence"]
     writer = csv.DictWriter(wfile, fieldnames=field_list, delimiter='\t')
